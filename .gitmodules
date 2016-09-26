@@ -14,6 +14,7 @@
 [submodule "libevent"]
 	path = libevent
 	url = git://github.com/libevent/libevent
+	ignore = untracked
 [submodule "yodl"]
 	path = yodl
 	url = git://github.com/fbb-git/yodl
