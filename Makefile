@@ -19,7 +19,7 @@ LIBS += ncurses
 BUILD_CHECK-ncurses   = ncurses/lib/libncursesw.a
 INSTALL_CHECK-ncurses = $(PREFIX)/lib/libncursesw.a
 $(BUILD_CHECK-ncurses):
-	cd ncurses && ./configure --prefix=$(PREFIX) --enable-widec CFLAGS="-fPIC"
+	cd ncurses && ./configure --prefix=$(PREFIX) --enable-widec --with-shared CFLAGS=-fPIC
 	make -C ncurses
 
 LIBS += libevent
@@ -53,10 +53,53 @@ $(BUILD_CHECK-tmux): $(INSTALL_CHECK-libevent) $(INSTALL_CHECK-ncurses)
 			LDFLAGS="-L$(PREFIX)/lib" LIBS="-lncursesw"
 	make -C tmux
 
+# Annoyingly, zsh depends on yodl and icmake, which we will build in a separate directory
+ZSH_DEPS_DIR := $(PWD)/zsh-deps
+export PATH  := $(PATH):$(ZSH_DEPS_DIR)/usr/bin
+ICMAKE_DIR   := $(PWD)/icmake/icmake
+BUILD_CHECK-icmake   := $(ICMAKE_DIR)/tmp/$(ZSH_DEPS_DIR)/usr/bin/icmake
+INSTALL_CHECK-icmake := $(ZSH_DEPS_DIR)/usr/bin/icmake
+
+$(BUILD_CHECK-icmake):
+	cd $(ICMAKE_DIR) && ./icm_prepare $(ZSH_DEPS_DIR)
+	cd $(ICMAKE_DIR) && ./icm_bootstrap x
+$(INSTALL_CHECK-icmake): $(BUILD_CHECK-icmake)
+	cd $(ICMAKE_DIR) && ./icm_install all /
+icmake-build: $(BUILD_CHECK-icmake)
+icmake-install: $(INSTALL_CHECK-icmake)
+.PHONY: icmake-build icmake-install
+
+BUILD_CHECK-yodl   := yodl/yodl/tmp/install/usr/bin/yodl
+INSTALL_CHECK-yodl := $(ZSH_DEPS_DIR)/usr/bin/yodl
+YODL_DIR := $(PWD)/yodl/yodl
+ICMAKE := $(INSTALL_CHECK-icmake) -qt/tmp/yodl build
+
+$(BUILD_CHECK-yodl): $(INSTALL_CHECK-icmake)
+	cd $(YODL_DIR) && $(ICMAKE) programs
+	cd $(YODL_DIR) && $(ICMAKE) macros
+$(INSTALL_CHECK-yodl): $(BUILD_CHECK-yodl)
+	cd $(YODL_DIR) && $(ICMAKE) install programs $(ZSH_DEPS_DIR)
+	cd $(YODL_DIR) && $(ICMAKE) install macros $(ZSH_DEPS_DIR)
+yodl-build: $(BUILD_CHECK-yodl)
+yodl-install: $(INSTALL_CHECK-yodl)
+.PHONY: yodl-build yodl-install
+
+zshdeps-uninstall:
+	rm -rf $(ZSH_DEPS_DIR)
+zshdeps-clean:
+	cd $(ICMAKE_DIR) && git reset --hard
+	cd $(ICMAKE_DIR) && git clean -dxf
+	cd $(YODL_DIR) && git reset --hard
+	cd $(YODL_DIR) && git clean -dxf
+.PHONY: zshdeps-uninstall zshdeps-clean
+uninstall_targets_all += zshdeps-uninstall
+clean_targets_all     += zshdeps-clean
+
+# finally, define the actual zsh target
 APPS += zsh
 BUILD_CHECK-zsh   = zsh/Src/zsh
 INSTALL_CHECK-zsh = $(PREFIX)/bin/zsh
-$(BUILD_CHECK-zsh): $(INSTALL_CHECK-ncurses)
+$(BUILD_CHECK-zsh): $(INSTALL_CHECK-ncurses) $(INSTALL_CHECK-yodl)
 	cd zsh && \
 		Util/preconfig && \
 		./configure --prefix=$(PREFIX) CFLAGS="-I$(PREFIX)/include" LDFLAGS="-L$(PREFIX)/lib"
@@ -93,7 +136,7 @@ $(1)_targets_all += $(2)-$(1)
 endef
 
 define PHONY_TARGETS_TEMPLATE_2 =
-all-$(1): libs-$(1) apps-$(1)
+all-$(1): $($(1)_targets_all)
 endef
 
 $(foreach prog,$(LIBS),$(eval $(call PROG_TARGET_TEMPLATE,$(prog),libs)))

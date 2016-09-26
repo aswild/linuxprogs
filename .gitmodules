@@ -1,6 +1,7 @@
 [submodule "ncurses6"]
 	path = ncurses
 	url = git://github.com/mirror/ncurses
+	ignore = untracked
 [submodule "tmux"]
 	path = tmux
 	url = git://github.com/tmux/tmux
@@ -16,3 +17,8 @@
 [submodule "yodl"]
 	path = yodl
 	url = git://github.com/fbb-git/yodl
+	ignore = untracked
+[submodule "icmake"]
+	path = icmake
+	url = git://github.com/fbb-git/icmake
+	ignore = untracked
