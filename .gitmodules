@@ -1,0 +1,18 @@
+[submodule "ncurses6"]
+	path = ncurses
+	url = git://github.com/mirror/ncurses
+[submodule "tmux"]
+	path = tmux
+	url = git://github.com/tmux/tmux
+[submodule "htop"]
+	path = htop
+	url = git://github.com/hishamhm/htop
+[submodule "zsh"]
+	path = zsh
+	url = git://github.com/zsh-users/zsh
+[submodule "libevent"]
+	path = libevent
+	url = git://github.com/libevent/libevent
+[submodule "yodl"]
+	path = yodl
+	url = git://github.com/fbb-git/yodl
