@@ -54,9 +54,9 @@ $(BUILD_CHECK-tmux): $(INSTALL_CHECK-libevent) $(INSTALL_CHECK-ncurses)
 	make -C tmux
 
 # Annoyingly, zsh depends on yodl and icmake, which we will build in a separate directory
-ZSH_DEPS_DIR := $(PWD)/zsh-deps
+ZSH_DEPS_DIR := $(CURDIR)/zsh-deps
 export PATH  := $(PATH):$(ZSH_DEPS_DIR)/usr/bin
-ICMAKE_DIR   := $(PWD)/icmake/icmake
+ICMAKE_DIR   := $(CURDIR)/icmake/icmake
 BUILD_CHECK-icmake   := $(ICMAKE_DIR)/tmp/$(ZSH_DEPS_DIR)/usr/bin/icmake
 INSTALL_CHECK-icmake := $(ZSH_DEPS_DIR)/usr/bin/icmake
 
@@ -71,7 +71,7 @@ icmake-install: $(INSTALL_CHECK-icmake)
 
 BUILD_CHECK-yodl   := yodl/yodl/tmp/install/usr/bin/yodl
 INSTALL_CHECK-yodl := $(ZSH_DEPS_DIR)/usr/bin/yodl
-YODL_DIR := $(PWD)/yodl/yodl
+YODL_DIR := $(CURDIR)/yodl/yodl
 ICMAKE := $(INSTALL_CHECK-icmake) -qt/tmp/yodl build
 
 $(BUILD_CHECK-yodl): $(INSTALL_CHECK-icmake)
