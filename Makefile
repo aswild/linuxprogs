@@ -111,7 +111,7 @@ $(BUILD_CHECK-zsh): $(INSTALL_CHECK-ncurses) $(INSTALL_CHECK-yodl)
 all: install
 .PHONY: help all
 
-define PROG_TARGET_TEMPLATE = 
+define PROG_TARGET_TEMPLATE
 $$(INSTALL_CHECK-$(1)): $$(BUILD_CHECK-$(1))
 	make -C $(1) install
 $(1)-uninstall:
@@ -129,13 +129,13 @@ uninstall_targets_$(2) += $(1)-uninstall
 clean_targets_$(2) += $(1)-clean
 endef
 
-define PHONY_TARGETS_TEMPLATE_1 = 
+define PHONY_TARGETS_TEMPLATE_1
 $(2)-$(1): $($(1)_targets_$(2))
 .PHONY: $(2)-$(1)
 $(1)_targets_all += $(2)-$(1)
 endef
 
-define PHONY_TARGETS_TEMPLATE_2 =
+define PHONY_TARGETS_TEMPLATE_2
 all-$(1): $($(1)_targets_all)
 endef
 
