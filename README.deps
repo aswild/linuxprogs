@@ -1,0 +1,5 @@
+# Ubuntu Dependencies from a base server 16.04 install:
+# build-essential autoconf automake libtool pkg-config
+
+# source this script to install
+sudo apt-get install build-essential autoconf automake libtool pkg-config
