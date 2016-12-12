@@ -19,14 +19,14 @@ LIBS += ncurses
 BUILD_CHECK-ncurses   = ncurses/lib/libncursesw.a
 INSTALL_CHECK-ncurses = $(PREFIX)/lib/libncursesw.a
 $(BUILD_CHECK-ncurses):
-	cd ncurses && ./configure --prefix=$(PREFIX) --enable-widec --with-shared CFLAGS=-fPIC
+	cd ncurses && ./configure --prefix=$(PREFIX) --enable-widec --disable-shared CFLAGS=-fPIC
 	make -C ncurses
 
 LIBS += libevent
-BUILD_CHECK-libevent   = libevent/.libs/libevent.so
-INSTALL_CHECK-libevent = $(PREFIX)/lib/libevent.so
+BUILD_CHECK-libevent   = libevent/.libs/libevent.a
+INSTALL_CHECK-libevent = $(PREFIX)/lib/libevent.a
 $(BUILD_CHECK-libevent):
-	cd libevent && ./autogen.sh && ./configure --prefix=$(PREFIX)
+	cd libevent && ./autogen.sh && ./configure --prefix=$(PREFIX) --enable-shared=no
 	make -C libevent
 
 LIBS += pcre
