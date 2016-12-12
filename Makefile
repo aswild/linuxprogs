@@ -6,6 +6,10 @@ ifeq ($(PREFIX),)
 	PREFIX := $(HOME)
 endif
 
+# Check gcc version for fixing up icmake/yodl
+GCC_46_OLDER = $(shell expr `gcc -dumpversion` '<=' '4.6')
+GCC_48_OLDER = $(shell expr `gcc -dumpversion` '<=' '4.8')
+
 # help target is first
 help:
 	@echo "TODO: HELP TEXT HERE"
@@ -50,6 +54,8 @@ $(BUILD_CHECK-htop): $(INSTALL_CHECK-ncurses)
 		./autogen.sh && \
 		./configure --prefix=$(PREFIX) CFLAGS="-I$(PREFIX)/include" LDFLAGS="-L$(PREFIX)/lib"
 	make -C htop
+	# reset INSTALL file for a clean git repo after build
+	cd htop && git checkout INSTALL
 
 APPS += tmux
 BUILD_CHECK-tmux   = tmux/tmux
@@ -74,12 +80,17 @@ $(BUILD_CHECK-ag) : $(INSTALL_CHECK-pcre)
 ZSH_DEPS_DIR := $(CURDIR)/zsh-deps
 export PATH  := $(PATH):$(ZSH_DEPS_DIR)/usr/bin
 ICMAKE_DIR   := $(CURDIR)/icmake/icmake
+ifeq ($(GCC_48_OLDER),1)
+	ICMAKE_CFLAGS = $(CFLAGS) -O2 -std=gnu99
+else
+	ICMAKE_CFLAGS = $(CFLAGS)
+endif
 BUILD_CHECK-icmake   := $(ICMAKE_DIR)/tmp/$(ZSH_DEPS_DIR)/usr/bin/icmake
 INSTALL_CHECK-icmake := $(ZSH_DEPS_DIR)/usr/bin/icmake
 
 $(BUILD_CHECK-icmake):
-	cd $(ICMAKE_DIR) && ./icm_prepare $(ZSH_DEPS_DIR)
-	cd $(ICMAKE_DIR) && ./icm_bootstrap x
+	cd $(ICMAKE_DIR) && CFLAGS="$(ICMAKE_CFLAGS)" ./icm_prepare $(ZSH_DEPS_DIR)
+	cd $(ICMAKE_DIR) && CFLAGS="$(ICMAKE_CFLAGS)" ./icm_bootstrap x
 $(INSTALL_CHECK-icmake): $(BUILD_CHECK-icmake)
 	cd $(ICMAKE_DIR) && ./icm_install all /
 icmake-build: $(BUILD_CHECK-icmake)
@@ -92,8 +103,19 @@ YODL_DIR := $(CURDIR)/yodl/yodl
 ICMAKE := $(INSTALL_CHECK-icmake) -qt/tmp/yodl build
 
 $(BUILD_CHECK-yodl): $(INSTALL_CHECK-icmake)
+ifeq ($(GCC_46_OLDER),1)
+	cd $(YODL_DIR) && sed -i 's/c++14/c++0x/' icmake/program
+else ifeq ($(GCC_48_OLDER),1)
+	cd $(YODL_DIR) && sed -i 's/c++14/c++11/' icmake/program
+endif
 	cd $(YODL_DIR) && $(ICMAKE) programs
 	cd $(YODL_DIR) && $(ICMAKE) macros
+	# unpatch for a clean git repo
+ifeq ($(GCC_46_OLDER),1)
+	cd $(YODL_DIR) && sed -i 's/c++0x/c++14/' icmake/program
+else ifeq ($(GCC_48_OLDER),1)
+	cd $(YODL_DIR) && sed -i 's/c++11/c++14/' icmake/program
+endif
 $(INSTALL_CHECK-yodl): $(BUILD_CHECK-yodl)
 	cd $(YODL_DIR) && $(ICMAKE) install programs $(ZSH_DEPS_DIR)
 	cd $(YODL_DIR) && $(ICMAKE) install macros $(ZSH_DEPS_DIR)
