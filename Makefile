@@ -29,6 +29,14 @@ $(BUILD_CHECK-libevent):
 	cd libevent && ./autogen.sh && ./configure --prefix=$(PREFIX)
 	make -C libevent
 
+LIBS += pcre
+BUILD_CHECK-pcre   = pcre/.libs/libpcre.a
+INSTALL_CHECK-pcre = $(PREFIX)/lib/libpcre.a
+$(BUILD_CHECK-pcre):
+	cd pcre && \
+		./configure --prefix=$(PREFIX) --enable-shared=no
+	make -C pcre
+
 #####################################
 # APPS SETUP
 #####################################
@@ -52,6 +60,15 @@ $(BUILD_CHECK-tmux): $(INSTALL_CHECK-libevent) $(INSTALL_CHECK-ncurses)
 		./configure --prefix=$(PREFIX) CFLAGS="-I$(PREFIX)/include -I$(PREFIX)/include/ncursesw" \
 			LDFLAGS="-L$(PREFIX)/lib" LIBS="-lncursesw"
 	make -C tmux
+
+APPS += ag
+BUILD_CHECK-ag   = ag/ag
+INSTALL_CHECK-ag = $(PREFIX)/bin/ag
+$(BUILD_CHECK-ag) : $(INSTALL_CHECK-pcre)
+	cd ag && \
+		./autogen.sh && \
+		./configure --prefix=$(PREFIX) --disable-lzma PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig
+	make -C ag
 
 # Annoyingly, zsh depends on yodl and icmake, which we will build in a separate directory
 ZSH_DEPS_DIR := $(CURDIR)/zsh-deps
@@ -117,8 +134,10 @@ $$(INSTALL_CHECK-$(1)): $$(BUILD_CHECK-$(1))
 $(1)-uninstall:
 	-make -C $(1) uninstall
 $(1)-clean:
-	cd $(1) && git reset --hard
-	cd $(1) && git clean -dxf
+	cd $(1) && git reset HEAD .
+	cd $(1) && git checkout .
+	cd $(1) && git clean -dxf .
+
 .PHONY: $(1) $(1)-build $(1)-install $(1)-uninstall $(1)-clean
 $(1): $(1)-build
 $(1)-build: $$(BUILD_CHECK-$(1))

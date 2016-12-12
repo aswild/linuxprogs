@@ -23,3 +23,6 @@
 	path = icmake
 	url = git://github.com/fbb-git/icmake
 	ignore = untracked
+[submodule "the_silver_searcher"]
+	path = ag
+	url = git://github.com/aswild/the_silver_searcher
