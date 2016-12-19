@@ -33,13 +33,13 @@ $(BUILD_CHECK-libevent):
 	cd libevent && ./autogen.sh && ./configure --prefix=$(PREFIX) --enable-shared=no
 	make -C libevent
 
-LIBS += pcre
-BUILD_CHECK-pcre   = pcre/.libs/libpcre.a
-INSTALL_CHECK-pcre = $(PREFIX)/lib/libpcre.a
-$(BUILD_CHECK-pcre):
-	cd pcre && \
-		./configure --prefix=$(PREFIX) --enable-shared=no
-	make -C pcre
+LIBS += pcre2
+BUILD_CHECK-pcre2   = pcre2/.libs/libpcre2-8.a
+INSTALL_CHECK-pcre2 = $(PREFIX)/lib/libpcre2-8.a
+$(BUILD_CHECK-pcre2):
+	cd pcre2 && \
+		./configure --prefix=$(PREFIX) --enable-jit --enable-shared=no
+	make -C pcre2
 
 #####################################
 # APPS SETUP
@@ -70,10 +70,10 @@ $(BUILD_CHECK-tmux): $(INSTALL_CHECK-libevent) $(INSTALL_CHECK-ncurses)
 APPS += ag
 BUILD_CHECK-ag   = ag/ag
 INSTALL_CHECK-ag = $(PREFIX)/bin/ag
-$(BUILD_CHECK-ag) : $(INSTALL_CHECK-pcre)
+$(BUILD_CHECK-ag) : $(INSTALL_CHECK-pcre2)
 	cd ag && \
 		./autogen.sh && \
-		./configure --prefix=$(PREFIX) --disable-lzma PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig
+		./configure --prefix=$(PREFIX) --with-pcre2 --disable-lzma PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig
 	make -C ag
 
 # Annoyingly, zsh depends on yodl and icmake, which we will build in a separate directory
