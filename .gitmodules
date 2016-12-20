@@ -26,3 +26,7 @@
 [submodule "the_silver_searcher"]
 	path = ag
 	url = git://github.com/aswild/the_silver_searcher
+[submodule "pcre2"]
+	path = pcre2
+	url = git://github.com/aswild/libpcre
+	branch = pcre2

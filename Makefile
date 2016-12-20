@@ -38,7 +38,7 @@ BUILD_CHECK-pcre2   = pcre2/.libs/libpcre2-8.a
 INSTALL_CHECK-pcre2 = $(PREFIX)/lib/libpcre2-8.a
 $(BUILD_CHECK-pcre2):
 	cd pcre2 && \
-		./configure --prefix=$(PREFIX) --enable-jit --enable-shared=no
+		autoreconf -fiv && ./configure --prefix=$(PREFIX) --enable-jit --enable-shared=no
 	make -C pcre2
 
 #####################################
