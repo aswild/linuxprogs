@@ -22,6 +22,7 @@ LIBS :=
 LIBS += ncurses
 BUILD_CHECK-ncurses   = ncurses/lib/libncursesw.a
 INSTALL_CHECK-ncurses = $(PREFIX)/lib/libncursesw.a
+INSTALL_STRIP-ncurses =
 $(BUILD_CHECK-ncurses):
 	cd ncurses && ./configure --prefix=$(PREFIX) --enable-widec --disable-shared CFLAGS=-fPIC
 	make -C ncurses
@@ -29,6 +30,7 @@ $(BUILD_CHECK-ncurses):
 LIBS += libevent
 BUILD_CHECK-libevent   = libevent/.libs/libevent.a
 INSTALL_CHECK-libevent = $(PREFIX)/lib/libevent.a
+INSTALL_STRIP-libevent = -strip
 $(BUILD_CHECK-libevent):
 	cd libevent && ./autogen.sh && ./configure --prefix=$(PREFIX) --enable-shared=no
 	make -C libevent
@@ -36,6 +38,7 @@ $(BUILD_CHECK-libevent):
 LIBS += pcre2
 BUILD_CHECK-pcre2   = pcre2/.libs/libpcre2-8.a
 INSTALL_CHECK-pcre2 = $(PREFIX)/lib/libpcre2-8.a
+INSTALL_STRIP-pcre2 = -strip
 $(BUILD_CHECK-pcre2):
 	cd pcre2 && \
 		autoreconf -fiv && ./configure --prefix=$(PREFIX) --enable-jit --enable-shared=no
@@ -49,6 +52,7 @@ APPS :=
 APPS += htop
 BUILD_CHECK-htop   = htop/htop
 INSTALL_CHECK-htop = $(PREFIX)/bin/htop
+INSTALL_STRIP-htop = -strip
 $(BUILD_CHECK-htop): $(INSTALL_CHECK-ncurses)
 	cd htop && \
 		./autogen.sh && \
@@ -60,6 +64,7 @@ $(BUILD_CHECK-htop): $(INSTALL_CHECK-ncurses)
 APPS += tmux
 BUILD_CHECK-tmux   = tmux/tmux
 INSTALL_CHECK-tmux = $(PREFIX)/bin/tmux
+INSTALL_STRIP-tmux = -strip
 $(BUILD_CHECK-tmux): $(INSTALL_CHECK-libevent) $(INSTALL_CHECK-ncurses)
 	cd tmux && \
 		./autogen.sh && \
@@ -70,6 +75,7 @@ $(BUILD_CHECK-tmux): $(INSTALL_CHECK-libevent) $(INSTALL_CHECK-ncurses)
 APPS += ag
 BUILD_CHECK-ag   = ag/ag
 INSTALL_CHECK-ag = $(PREFIX)/bin/ag
+INSTALL_STRIP-ag = -strip
 $(BUILD_CHECK-ag) : $(INSTALL_CHECK-pcre2)
 	cd ag && \
 		./autogen.sh && \
@@ -138,6 +144,7 @@ clean_targets_all     += zshdeps-clean
 APPS += zsh
 BUILD_CHECK-zsh   = zsh/Src/zsh
 INSTALL_CHECK-zsh = $(PREFIX)/bin/zsh
+INSTALL_STRIP-zsh = -strip
 $(BUILD_CHECK-zsh): $(INSTALL_CHECK-ncurses) $(INSTALL_CHECK-yodl)
 	cd zsh && \
 		Util/preconfig && \
@@ -152,7 +159,7 @@ all: install
 
 define PROG_TARGET_TEMPLATE
 $$(INSTALL_CHECK-$(1)): $$(BUILD_CHECK-$(1))
-	make -C $(1) install
+	make -C $(1) install$$(INSTALL_STRIP-$(1))
 $(1)-uninstall:
 	-make -C $(1) uninstall
 $(1)-clean:
